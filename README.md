@@ -1,32 +1,66 @@
-# React + TypeScript + Vite
+<div align="center">
+  <img src="public/cozify-logo-dark.png" alt="coZify Logo" width="250" />
+  
+  # coZify
+  
+  **A beautiful, modern web experience built with React, Vite, and Tailwind CSS.**
+</div>
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+---
 
-Currently, two official plugins are available:
+<div align="center">
+  <img src="src/assets/hero.png" alt="coZify Hero Preview" width="100%" />
+</div>
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🚀 Features
 
-## React Compiler
+- **Blazing Fast**: Powered by Vite and SWC/Oxc for instant HMR.
+- **Modern UI**: Styled with Tailwind CSS for a fully responsive design.
+- **Type-Safe**: Built entirely with TypeScript for robustness.
+- **Linted & Formatted**: Configured with Oxlint for ultra-fast linting.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Tech Stack
 
-## Expanding the Oxlint configuration
+- [React](https://react.dev/)
+- [Vite](https://vitejs.dev/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Firebase](https://firebase.google.com/)
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+## 🏃‍♂️ Getting Started
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Mustaq47/coZify-Website.git
+   cd coZify-Website
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
+
+4. **Build for production:**
+   ```bash
+   npm run build
+   ```
+
+## 📐 Project Structure
+
+```text
+├── public/           # Static assets
+├── src/              # Source code
+│   ├── assets/       # Images and graphics
+│   ├── App.tsx       # Main component
+│   ├── main.tsx      # Entry point
+│   ├── index.css     # Global styles
+│   └── firebase.ts   # Firebase configuration
+├── package.json      # Dependencies and scripts
+├── tailwind.config.js# Tailwind CSS configuration
+└── vite.config.ts    # Vite configuration
 ```
-
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
