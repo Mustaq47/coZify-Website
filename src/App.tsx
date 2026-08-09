@@ -1,7 +1,5 @@
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { useRef, useState, useEffect } from 'react';
-import { auth } from './firebase';
-import { isSignInWithEmailLink, signInWithEmailLink, sendSignInLinkToEmail } from 'firebase/auth';
+import { useRef, useState } from 'react';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -115,18 +113,12 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
 
 // ─── Suggestion Section ───────────────────────────────────────────────────────
 
-interface SuggestionProps {
-  dark: boolean;
-  verifiedEmail: string | null;
-  onVerifyRequest: (email: string) => Promise<void>;
-}
+// ─── Suggestion Section ───────────────────────────────────────────────────────
 
-function SuggestionSection({ dark, verifiedEmail, onVerifyRequest }: SuggestionProps) {
-  const [form, setForm] = useState({ name: '', email: verifiedEmail || '', type: 'Feature Request', message: '' });
+function SuggestionSection({ dark }: { dark: boolean }) {
+  const [form, setForm] = useState({ name: '', email: '', type: 'Feature Request', message: '' });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [verifying, setVerifying] = useState(false);
-  const [linkSent, setLinkSent] = useState(false);
 
   const cardBg = dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
   const cardBorder = dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
@@ -135,12 +127,6 @@ function SuggestionSection({ dark, verifiedEmail, onVerifyRequest }: SuggestionP
   const inputBorder = dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)';
   const textColor = dark ? '#fff' : '#111';
 
-  useEffect(() => {
-    if (verifiedEmail) {
-      setForm((f) => ({ ...f, email: verifiedEmail }));
-    }
-  }, [verifiedEmail]);
-
   const inputStyle: React.CSSProperties = {
     width: '100%', padding: '0.75rem 1rem', borderRadius: '0.75rem',
     background: inputBg, border: `1px solid ${inputBorder}`, color: textColor,
@@ -148,29 +134,13 @@ function SuggestionSection({ dark, verifiedEmail, onVerifyRequest }: SuggestionP
     transition: 'border-color 0.2s', boxSizing: 'border-box',
   };
 
-  const handleSendLink = async () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(form.email)) {
-      alert("Please enter a valid email address.");
-      return;
-    }
-    setVerifying(true);
-    try {
-      await onVerifyRequest(form.email);
-      setLinkSent(true);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to send verification link. Please check your config.");
-    } finally {
-      setVerifying(false);
-    }
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!verifiedEmail || form.email !== verifiedEmail) {
-      alert("Please verify your email address first.");
+    // Strict email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      alert("Please enter a valid email address.");
       return;
     }
 
@@ -204,8 +174,6 @@ function SuggestionSection({ dark, verifiedEmail, onVerifyRequest }: SuggestionP
       });
   };
 
-  const isVerified = verifiedEmail && form.email === verifiedEmail;
-
   return (
     <motion.section initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-100px' }} variants={stagger}
       style={{ padding: 'clamp(4rem,8vw,7rem) 1.5rem', position: 'relative', overflow: 'hidden' }}>
@@ -233,7 +201,7 @@ function SuggestionSection({ dark, verifiedEmail, onVerifyRequest }: SuggestionP
                   style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎉</motion.div>
                 <h3 style={{ fontWeight: 700, fontSize: '1.2rem', marginBottom: '0.5rem', color: textColor }}>Thank you!</h3>
                 <p style={{ color: mutedText, lineHeight: 1.7 }}>Your suggestion has been received. We read every single one and it genuinely shapes what we build next.</p>
-                <button onClick={() => { setSubmitted(false); setForm({ name: '', email: verifiedEmail || '', type: 'Feature Request', message: '' }); setLinkSent(false); }}
+                <button onClick={() => { setSubmitted(false); setForm({ name: '', email: '', type: 'Feature Request', message: '' }); }}
                   style={{ marginTop: '1.5rem', background: 'rgba(123,97,255,0.15)', border: '1px solid rgba(123,97,255,0.3)', color: '#7B61FF', borderRadius: '999px', padding: '0.6rem 1.5rem', cursor: 'pointer', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 600, fontSize: '0.9rem' }}>
                   Send another →
                 </button>
@@ -253,34 +221,14 @@ function SuggestionSection({ dark, verifiedEmail, onVerifyRequest }: SuggestionP
 
                   {/* Email */}
                   <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                      <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: mutedText, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Your Email *</label>
-                      {isVerified && <span style={{ fontSize: '0.75rem', color: '#22C55E', fontWeight: 600 }}>✓ Verified Mailbox</span>}
-                    </div>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <input type="email" required placeholder="e.g. email@example.com" value={form.email}
-                        disabled={!!isVerified}
-                        onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                        style={{ ...inputStyle, flex: 1, opacity: isVerified ? 0.7 : 1 }}
-                        onFocus={(e) => (e.target.style.borderColor = '#7B61FF')}
-                        onBlur={(e) => (e.target.style.borderColor = inputBorder)} />
-                      
-                      {!isVerified && (
-                        <button type="button" onClick={handleSendLink} disabled={verifying || !form.email}
-                          style={{ background: 'rgba(123,97,255,0.12)', border: '1px solid rgba(123,97,255,0.3)', color: '#7B61FF', borderRadius: '0.75rem', padding: '0 1rem', cursor: 'pointer', fontSize: '0.85rem', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 600, transition: 'all 0.2s', opacity: form.email ? 1 : 0.6 }}>
-                          {verifying ? '⏳ Sending...' : linkSent ? '🔄 Resend' : 'Verify'}
-                        </button>
-                      )}
-                    </div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: mutedText, marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Your Email *</label>
+                    <input type="email" required placeholder="e.g. email@example.com" value={form.email}
+                      onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                      style={inputStyle}
+                      onFocus={(e) => (e.target.style.borderColor = '#7B61FF')}
+                      onBlur={(e) => (e.target.style.borderColor = inputBorder)} />
                   </div>
                 </div>
-
-                {linkSent && !isVerified && (
-                  <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-                    style={{ background: 'rgba(123,97,255,0.06)', border: '1px solid rgba(123,97,255,0.2)', padding: '0.875rem 1.25rem', borderRadius: '0.875rem', fontSize: '0.85rem', color: mutedText, lineHeight: 1.5 }}>
-                    📬 <strong>Verification link sent!</strong> Check your inbox at <strong>{form.email}</strong> and click the link to confirm you own this mailbox and unlock submission.
-                  </motion.div>
-                )}
 
                 {/* Type */}
                 <div>
@@ -298,22 +246,21 @@ function SuggestionSection({ dark, verifiedEmail, onVerifyRequest }: SuggestionP
                 {/* Message */}
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: mutedText, marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Your Suggestion *</label>
-                  <textarea required placeholder={isVerified ? "Tell us what you'd love to see in coZify..." : "🔒 Please verify your email mailbox above to write suggestions."}
+                  <textarea required placeholder="Tell us what you'd love to see in coZify..."
                     value={form.message}
-                    disabled={!isVerified}
                     onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
                     rows={4}
-                    style={{ ...inputStyle, resize: 'vertical', minHeight: 100, opacity: isVerified ? 1 : 0.6 }}
+                    style={{ ...inputStyle, resize: 'vertical', minHeight: 100 }}
                     onFocus={(e) => (e.target.style.borderColor = '#7B61FF')}
                     onBlur={(e) => (e.target.style.borderColor = inputBorder)} />
                 </div>
 
                 {/* Submit */}
-                <motion.button type="submit" whileTap={{ scale: 0.97 }} disabled={loading || !isVerified}
-                  style={{ background: (!isVerified || loading) ? 'rgba(123,97,255,0.4)' : 'linear-gradient(135deg,#7B61FF,#00E5FF)', color: 'white', border: 'none', borderRadius: '999px', padding: '0.875rem', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 700, fontSize: '1rem', cursor: (!isVerified || loading) ? 'not-allowed' : 'pointer', boxShadow: isVerified ? '0 0 30px rgba(123,97,255,0.3)' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', transition: 'all 0.2s', opacity: isVerified ? 1 : 0.65 }}>
+                <motion.button type="submit" whileTap={{ scale: 0.97 }} disabled={loading}
+                  style={{ background: loading ? 'rgba(123,97,255,0.4)' : 'linear-gradient(135deg,#7B61FF,#00E5FF)', color: 'white', border: 'none', borderRadius: '999px', padding: '0.875rem', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 700, fontSize: '1rem', cursor: loading ? 'not-allowed' : 'pointer', boxShadow: '0 0 30px rgba(123,97,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', transition: 'all 0.2s' }}>
                   {loading ? (
                     <><motion.span animate={{ rotate: 360 }} transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' as const }} style={{ display: 'inline-block' }}>⏳</motion.span> Sending...</>
-                  ) : isVerified ? '✉️ Send Suggestion' : '🔒 Verify Email to Submit'}
+                  ) : '✉️ Send Suggestion'}
                 </motion.button>
               </motion.form>
             )
@@ -343,37 +290,6 @@ export default function App() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
 
   const [dark, setDark] = useState(false);
-  const [verifiedEmail, setVerifiedEmail] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (isSignInWithEmailLink(auth, window.location.href)) {
-      let email = window.localStorage.getItem('emailForSignIn');
-      if (!email) {
-        email = window.prompt('Please enter your email to complete verification:');
-      }
-      if (email) {
-        signInWithEmailLink(auth, email, window.location.href)
-          .then(() => {
-            setVerifiedEmail(email);
-            window.localStorage.removeItem('emailForSignIn');
-            window.history.replaceState({}, document.title, window.location.pathname);
-          })
-          .catch((err) => {
-            console.error(err);
-            alert("Verification link expired or invalid.");
-          });
-      }
-    }
-  }, []);
-
-  const handleVerifyRequest = async (email: string) => {
-    const actionCodeSettings = {
-      url: window.location.href,
-      handleCodeInApp: true,
-    };
-    await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-    window.localStorage.setItem('emailForSignIn', email);
-  };
   const [modal, setModal] = useState<'privacy' | 'support' | 'contact' | null>(null);
   const [hoveredFeature, setHoveredFeature] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -651,7 +567,7 @@ export default function App() {
       <div style={{ width: '100%', height: 1, background: divider }} />
 
       {/* ─── SUGGESTION SECTION ─── */}
-      <SuggestionSection dark={dark} verifiedEmail={verifiedEmail} onVerifyRequest={handleVerifyRequest} />
+      <SuggestionSection dark={dark} />
 
       <div style={{ width: '100%', height: 1, background: divider }} />
 
