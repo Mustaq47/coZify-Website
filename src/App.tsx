@@ -484,43 +484,20 @@ export default function App() {
 
   const apkHref = '/cozify.apk';
 
-  const DownloadBtn = ({ style }: { style?: React.CSSProperties }) => (
-    <a href={apkHref} download style={{ background: 'linear-gradient(135deg,#7B61FF,#00E5FF)', color: 'white', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 600, border: 'none', padding: '0.75rem 1.5rem', borderRadius: 999, cursor: 'pointer', textDecoration: 'none', fontSize: '0.9rem', boxShadow: '0 0 24px rgba(123,97,255,0.4)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', whiteSpace: 'nowrap', ...style }}>
-      📥 Download APK
-    </a>
-  );
-
-  if (!user) {
+  const DownloadBtn = ({ style }: { style?: React.CSSProperties }) => {
+    if (user) {
+      return (
+        <a href={apkHref} download style={{ background: 'linear-gradient(135deg,#7B61FF,#00E5FF)', color: 'white', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 600, border: 'none', padding: '0.75rem 1.5rem', borderRadius: 999, cursor: 'pointer', textDecoration: 'none', fontSize: '0.9rem', boxShadow: '0 0 24px rgba(123,97,255,0.4)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', whiteSpace: 'nowrap', ...style }}>
+          📥 Download APK
+        </a>
+      );
+    }
     return (
-      <div style={{ background: bodyBg, color: textColor, minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', fontFamily: 'Space Grotesk,sans-serif', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', zIndex: 10 }}>
-          <button onClick={() => setDark(d => !d)}
-            style={{ background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', border: `1px solid ${dark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'}`, borderRadius: 999, padding: '0.45rem 1rem', cursor: 'pointer', color: textColor, fontSize: '0.8rem', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-            {dark ? '☀️ Light' : '🌙 Dark'}
-          </button>
-        </div>
-
-        <div style={{ position: 'absolute', width: 500, height: 500, borderRadius: '50%', filter: 'blur(100px)', background: dark ? 'rgba(123,97,255,0.12)' : 'rgba(123,97,255,0.06)', top: '10%', left: '10%', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', width: 400, height: 400, borderRadius: '50%', filter: 'blur(100px)', background: dark ? 'rgba(0,229,255,0.08)' : 'rgba(0,229,255,0.04)', bottom: '10%', right: '10%', pointerEvents: 'none' }} />
-        
-        <div style={{ 
-          background: dark ? 'rgba(10,10,20,0.5)' : 'rgba(255,255,255,0.85)', 
-          border: dark ? '1px solid rgba(74,222,128,0.15)' : '1px solid rgba(22,163,74,0.12)', 
-          borderRadius: '2rem', padding: '2.5rem 2rem', maxWidth: '440px', width: '100%', 
-          backdropFilter: 'blur(50px)', zIndex: 1, 
-          boxShadow: dark ? '0 25px 80px rgba(0,0,0,0.5), 0 0 40px rgba(74,222,128,0.05)' : '0 25px 80px rgba(0,0,0,0.05), 0 0 30px rgba(22,163,74,0.02)',
-          transition: 'all 0.4s ease'
-        }}>
-          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-            <img src="/cozify-logo-light.png" alt="coZify" style={{ height: 44, objectFit: 'contain', filter: dark ? 'invert(1) hue-rotate(180deg) brightness(1.15) drop-shadow(0 0 12px rgba(34,197,94,0.45))' : 'none', marginBottom: '1rem' }} />
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.03em', color: textColor, marginBottom: '0.5rem' }}>Welcome to coZify</h1>
-            <p style={{ color: mutedText, fontSize: '0.9rem', lineHeight: 1.5 }}>Authenticate to access the official promotional platform.</p>
-          </div>
-          <LoginForm dark={dark} onAuthSuccess={() => {}} />
-        </div>
-      </div>
+      <button onClick={() => setModal('login')} style={{ background: 'linear-gradient(135deg,#7B61FF,#00E5FF)', color: 'white', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 600, border: 'none', padding: '0.75rem 1.5rem', borderRadius: 999, cursor: 'pointer', textDecoration: 'none', fontSize: '0.9rem', boxShadow: '0 0 24px rgba(123,97,255,0.4)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', whiteSpace: 'nowrap', ...style }}>
+        📥 Download APK
+      </button>
     );
-  }
+  };
 
   return (
     <div style={{ background: bodyBg, color: textColor, minHeight: '100dvh', transition: 'all 0.4s ease', fontFamily: 'Space Grotesk,sans-serif', overflowX: 'hidden' }}>
