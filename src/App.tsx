@@ -1,5 +1,8 @@
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
+import { auth, db } from './firebase';
+import { onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -113,9 +116,159 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
 
 // ─── Suggestion Section ───────────────────────────────────────────────────────
 
+// ─── Login Form Component ─────────────────────────────────────────────────────
+
+function LoginForm({ dark, onAuthSuccess }: { dark: boolean; onAuthSuccess: () => void }) {
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+
+  // Calibrated Design Tokens
+  const primaryGreen = dark ? '#4ADE80' : '#16A34A';
+  const labelColor = dark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)';
+  const textColor = dark ? '#F8FAFC' : '#111827';
+  const inputBg = dark ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.85)';
+  const inputBorder = dark ? 'rgba(255,255,255,0.07)' : 'rgba(22,163,74,0.12)';
+  const primaryGradient = dark 
+    ? 'linear-gradient(135deg, #4ADE80, #06B6D4)' 
+    : 'linear-gradient(135deg, #16A34A, #2563EB)';
+  const googleBg = dark ? 'rgba(255,255,255,0.03)' : '#ffffff';
+  const googleBorder = dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+
+  const getInputStyle = (field: string): React.CSSProperties => ({
+    width: '100%', padding: '0.75rem 1rem', borderRadius: '0.75rem',
+    background: inputBg, 
+    border: `1px solid ${focusedField === field ? primaryGreen : inputBorder}`, 
+    color: textColor,
+    fontFamily: 'Space Grotesk,sans-serif', fontSize: '0.95rem', outline: 'none',
+    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)', 
+    boxSizing: 'border-box',
+    marginBottom: '0.75rem',
+    boxShadow: focusedField === field ? `0 0 16px ${primaryGreen}22` : 'none'
+  });
+
+  const handleEmailAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      if (isSignUp) {
+        if (password.length < 6) {
+          throw new Error("Password should be at least 6 characters.");
+        }
+        const credential = await createUserWithEmailAndPassword(auth, email, password);
+        if (name && credential.user) {
+          const { updateProfile } = await import('firebase/auth');
+          await updateProfile(credential.user, { displayName: name });
+        }
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+      }
+      onAuthSuccess();
+    } catch (err: any) {
+      console.error(err);
+      if (err?.code === 'auth/invalid-credential' || err?.code === 'auth/user-not-found') {
+        setError("You don't have an account or entered wrong credentials. Please sign up below if you need a new account!");
+      } else {
+        setError(err?.message || "Authentication failed. Please check credentials.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleAuth = async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      onAuthSuccess();
+    } catch (err: any) {
+      console.error(err);
+      if (err?.code !== 'auth/popup-closed-by-user') {
+        setError(err?.message || "Google Sign-In failed.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+      <form onSubmit={handleEmailAuth} style={{ display: 'flex', flexDirection: 'column' }}>
+        {isSignUp && (
+          <div>
+            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: labelColor, marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Full Name</label>
+            <input type="text" placeholder="e.g. Mustaq" required value={name} 
+              onFocus={() => setFocusedField('name')} onBlur={() => setFocusedField(null)}
+              onChange={(e) => setName(e.target.value)} style={getInputStyle('name')} />
+          </div>
+        )}
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: labelColor, marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Email Address</label>
+          <input type="email" placeholder="e.g. email@example.com" required value={email} 
+            onFocus={() => setFocusedField('email')} onBlur={() => setFocusedField(null)}
+            onChange={(e) => setEmail(e.target.value)} style={getInputStyle('email')} />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: labelColor, marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Password</label>
+          <input type="password" placeholder="••••••••••••" required value={password} 
+            onFocus={() => setFocusedField('password')} onBlur={() => setFocusedField(null)}
+            onChange={(e) => setPassword(e.target.value)} style={getInputStyle('password')} />
+        </div>
+
+        {error && (
+          <p style={{ color: '#FF4D8D', fontSize: '0.82rem', fontWeight: 500, margin: '0.2rem 0 0.75rem', lineHeight: 1.4 }} aria-live="polite">
+            ⚠️ {error}
+          </p>
+        )}
+
+        <motion.button type="submit" disabled={loading} whileTap={{ scale: 0.97 }}
+          style={{ background: primaryGradient, color: 'white', border: 'none', borderRadius: '999px', padding: '0.8rem', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 700, fontSize: '0.95rem', cursor: loading ? 'not-allowed' : 'pointer', marginTop: '0.5rem', transition: 'all 0.2s', opacity: loading ? 0.7 : 1, boxShadow: dark ? `0 4px 20px ${primaryGreen}33` : 'none' }}>
+          {loading ? 'Processing...' : isSignUp ? 'Create Account' : 'Sign In'}
+        </motion.button>
+      </form>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.4rem 0' }}>
+        <div style={{ flex: 1, height: 1, background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }} />
+        <span style={{ fontSize: '0.7rem', color: labelColor, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>or</span>
+        <div style={{ flex: 1, height: 1, background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }} />
+      </div>
+
+      <motion.button type="button" onClick={handleGoogleAuth} disabled={loading} whileTap={{ scale: 0.97 }}
+        style={{ background: googleBg, border: `1px solid ${googleBorder}`, color: textColor, borderRadius: '999px', padding: '0.8rem', cursor: 'pointer', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 600, fontSize: '0.95rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', transition: 'all 0.2s', boxShadow: dark ? 'none' : '0 2px 8px rgba(0,0,0,0.04)' }}>
+        <svg style={{ width: 18, height: 18 }} viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.56-2.77c-.98.66-2.23 1.06-3.72 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" stroke="none" />
+        </svg>
+        Sign In with Google
+      </motion.button>
+
+      <button type="button" onClick={() => setIsSignUp(!isSignUp)}
+        style={{ background: 'none', border: 'none', color: primaryGreen, fontSize: '0.85rem', cursor: 'pointer', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 600, textAlign: 'center', marginTop: '0.5rem', transition: 'color 0.2s' }}>
+        {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Create one"}
+      </button>
+    </div>
+  );
+}
+
 // ─── Suggestion Section ───────────────────────────────────────────────────────
 
-function SuggestionSection({ dark }: { dark: boolean }) {
+interface SuggestionProps {
+  dark: boolean;
+  user: any;
+  onOpenLogin: () => void;
+}
+
+function SuggestionSection({ dark, user, onOpenLogin }: SuggestionProps) {
   const [form, setForm] = useState({ name: '', email: '', type: 'Feature Request', message: '' });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -127,6 +280,18 @@ function SuggestionSection({ dark }: { dark: boolean }) {
   const inputBorder = dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)';
   const textColor = dark ? '#fff' : '#111';
 
+  useEffect(() => {
+    if (user) {
+      setForm((f) => ({
+        ...f,
+        name: user.displayName || '',
+        email: user.email || '',
+      }));
+    } else {
+      setForm((f) => ({ ...f, name: '', email: '' }));
+    }
+  }, [user]);
+
   const inputStyle: React.CSSProperties = {
     width: '100%', padding: '0.75rem 1rem', borderRadius: '0.75rem',
     background: inputBg, border: `1px solid ${inputBorder}`, color: textColor,
@@ -136,28 +301,21 @@ function SuggestionSection({ dark }: { dark: boolean }) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Strict email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(form.email)) {
-      alert("Please enter a valid email address.");
+    if (!user) {
+      alert("Please sign in first.");
+      onOpenLogin();
       return;
     }
 
     setLoading(true);
 
-    fetch("https://formsubmit.co/ajax/cozifyfinance@gmail.com", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      },
-      body: JSON.stringify({
-        Name: form.name || 'Anonymous',
-        Email: form.email,
-        Type: form.type,
-        Suggestion: form.message
-      })
+    addDoc(collection(db, "support_queries"), {
+      name: form.name || 'Anonymous',
+      email: form.email,
+      type: form.type,
+      message: form.message,
+      uid: user.uid,
+      timestamp: serverTimestamp()
     })
       .then(() => {
         setLoading(false);
@@ -166,18 +324,28 @@ function SuggestionSection({ dark }: { dark: boolean }) {
       .catch((err) => {
         console.error(err);
         setLoading(false);
-        // Fallback to mailto if API fails
-        const emailSubject = `coZify Suggestion [${form.type}]`;
-        const emailBody = `Name: ${form.name || 'Anonymous'}\nEmail: ${form.email}\nFeedback Type: ${form.type}\n\nSuggestion:\n${form.message}`;
-        window.location.href = `mailto:cozifyfinance@gmail.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
-        setSubmitted(true);
+        fetch("https://formsubmit.co/ajax/cozifyfinance@gmail.com", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Accept": "application/json" },
+          body: JSON.stringify({
+            Name: form.name || 'Anonymous',
+            Email: form.email,
+            Type: form.type,
+            Suggestion: form.message
+          })
+        }).then(() => setSubmitted(true))
+          .catch(() => {
+            const emailSubject = `coZify Suggestion [${form.type}]`;
+            const emailBody = `Name: ${form.name}\nEmail: ${form.email}\nType: ${form.type}\n\nSuggestion:\n${form.message}`;
+            window.location.href = `mailto:cozifyfinance@gmail.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+            setSubmitted(true);
+          });
       });
   };
 
   return (
     <motion.section initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-100px' }} variants={stagger}
       style={{ padding: 'clamp(4rem,8vw,7rem) 1.5rem', position: 'relative', overflow: 'hidden' }}>
-      {/* Ambient orb */}
       <div style={{ position: 'absolute', width: 500, height: 500, borderRadius: '50%', filter: 'blur(80px)', background: 'rgba(0,229,255,0.07)', top: '-100px', right: '-100px', pointerEvents: 'none' }} />
 
       <div style={{ maxWidth: 700, margin: '0 auto', position: 'relative', zIndex: 1 }}>
@@ -188,20 +356,33 @@ function SuggestionSection({ dark }: { dark: boolean }) {
             <span style={{ background: 'linear-gradient(135deg,#00E5FF,#7B61FF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>future of coZify</span>
           </h2>
           <p style={{ color: mutedText, lineHeight: 1.7 }}>
-            Got an idea? Found a bug? Want a feature? Every suggestion is read by the team and helps make coZify better for everyone.
+            Got an idea? Found a bug? Want a feature? Authenticate to link your suggestion to your account and help make coZify better.
           </p>
         </motion.div>
 
         <motion.div variants={fadeUp} style={{ background: cardBg, border: `1px solid ${cardBorder}`, borderRadius: '1.5rem', padding: 'clamp(1.5rem,4vw,2.25rem)', backdropFilter: 'blur(40px)' }}>
           <AnimatePresence mode="wait">
-            {submitted ? (
+            {!user ? (
+              <motion.div key="locked" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+                style={{ textAlign: 'center', padding: '2rem 1rem' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔒</div>
+                <h3 style={{ fontWeight: 700, fontSize: '1.25rem', marginBottom: '0.5rem', color: textColor }}>Authentic Suggestions Only</h3>
+                <p style={{ color: mutedText, lineHeight: 1.7, maxWidth: '440px', margin: '0 auto 1.5rem' }}>
+                  Please sign in with your coZify account (or create one) to verify your identity and unlock suggestion submission.
+                </p>
+                <button onClick={onOpenLogin}
+                  style={{ background: 'linear-gradient(135deg,#7B61FF,#00E5FF)', color: 'white', border: 'none', borderRadius: '999px', padding: '0.75rem 2rem', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 700, fontSize: '1rem', cursor: 'pointer', boxShadow: '0 0 24px rgba(123,97,255,0.4)', transition: 'all 0.2s' }}>
+                  🔑 Sign In / Register
+                </button>
+              </motion.div>
+            ) : submitted ? (
               <motion.div key="success" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
                 style={{ textAlign: 'center', padding: '2rem 0' }}>
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', damping: 12, stiffness: 200 }}
                   style={{ fontSize: '3rem', marginBottom: '1rem' }}>🎉</motion.div>
-                <h3 style={{ fontWeight: 700, fontSize: '1.2rem', marginBottom: '0.5rem', color: textColor }}>Thank you!</h3>
-                <p style={{ color: mutedText, lineHeight: 1.7 }}>Your suggestion has been received. We read every single one and it genuinely shapes what we build next.</p>
-                <button onClick={() => { setSubmitted(false); setForm({ name: '', email: '', type: 'Feature Request', message: '' }); }}
+                <h3 style={{ fontWeight: 700, fontSize: '1.2rem', marginBottom: '0.5rem', color: textColor }}>Thank you, {user.displayName || 'Friend'}!</h3>
+                <p style={{ color: mutedText, lineHeight: 1.7 }}>Your suggestion has been written directly to our Firestore database. The team will review it!</p>
+                <button onClick={() => setSubmitted(false)}
                   style={{ marginTop: '1.5rem', background: 'rgba(123,97,255,0.15)', border: '1px solid rgba(123,97,255,0.3)', color: '#7B61FF', borderRadius: '999px', padding: '0.6rem 1.5rem', cursor: 'pointer', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 600, fontSize: '0.9rem' }}>
                   Send another →
                 </button>
@@ -211,22 +392,14 @@ function SuggestionSection({ dark }: { dark: boolean }) {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
                   {/* Name */}
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: mutedText, marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Your Name (optional)</label>
-                    <input type="text" placeholder="e.g. Mustaq" value={form.name}
-                      onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                      style={inputStyle}
-                      onFocus={(e) => (e.target.style.borderColor = '#7B61FF')}
-                      onBlur={(e) => (e.target.style.borderColor = inputBorder)} />
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: mutedText, marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Your Name</label>
+                    <input type="text" disabled value={form.name} style={{ ...inputStyle, opacity: 0.7 }} />
                   </div>
 
                   {/* Email */}
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: mutedText, marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Your Email *</label>
-                    <input type="email" required placeholder="e.g. email@example.com" value={form.email}
-                      onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                      style={inputStyle}
-                      onFocus={(e) => (e.target.style.borderColor = '#7B61FF')}
-                      onBlur={(e) => (e.target.style.borderColor = inputBorder)} />
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: mutedText, marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Your Email</label>
+                    <input type="email" disabled value={form.email} style={{ ...inputStyle, opacity: 0.7 }} />
                   </div>
                 </div>
 
@@ -263,8 +436,7 @@ function SuggestionSection({ dark }: { dark: boolean }) {
                   ) : '✉️ Send Suggestion'}
                 </motion.button>
               </motion.form>
-            )
-        }
+            )}
           </AnimatePresence>
         </motion.div>
 
@@ -290,9 +462,16 @@ export default function App() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
 
   const [dark, setDark] = useState(false);
-  const [modal, setModal] = useState<'privacy' | 'support' | 'contact' | null>(null);
+  const [modal, setModal] = useState<'privacy' | 'support' | 'contact' | 'login' | null>(null);
+  const [user, setUser] = useState<any>(null);
   const [hoveredFeature, setHoveredFeature] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    return onAuthStateChanged(auth, (u) => {
+      setUser(u);
+    });
+  }, []);
 
   const cardBg = dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
   const cardBorder = dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
@@ -310,6 +489,38 @@ export default function App() {
       📥 Download APK
     </a>
   );
+
+  if (!user) {
+    return (
+      <div style={{ background: bodyBg, color: textColor, minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', fontFamily: 'Space Grotesk,sans-serif', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', zIndex: 10 }}>
+          <button onClick={() => setDark(d => !d)}
+            style={{ background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', border: `1px solid ${dark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'}`, borderRadius: 999, padding: '0.45rem 1rem', cursor: 'pointer', color: textColor, fontSize: '0.8rem', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            {dark ? '☀️ Light' : '🌙 Dark'}
+          </button>
+        </div>
+
+        <div style={{ position: 'absolute', width: 500, height: 500, borderRadius: '50%', filter: 'blur(100px)', background: dark ? 'rgba(123,97,255,0.12)' : 'rgba(123,97,255,0.06)', top: '10%', left: '10%', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', width: 400, height: 400, borderRadius: '50%', filter: 'blur(100px)', background: dark ? 'rgba(0,229,255,0.08)' : 'rgba(0,229,255,0.04)', bottom: '10%', right: '10%', pointerEvents: 'none' }} />
+        
+        <div style={{ 
+          background: dark ? 'rgba(10,10,20,0.5)' : 'rgba(255,255,255,0.85)', 
+          border: dark ? '1px solid rgba(74,222,128,0.15)' : '1px solid rgba(22,163,74,0.12)', 
+          borderRadius: '2rem', padding: '2.5rem 2rem', maxWidth: '440px', width: '100%', 
+          backdropFilter: 'blur(50px)', zIndex: 1, 
+          boxShadow: dark ? '0 25px 80px rgba(0,0,0,0.5), 0 0 40px rgba(74,222,128,0.05)' : '0 25px 80px rgba(0,0,0,0.05), 0 0 30px rgba(22,163,74,0.02)',
+          transition: 'all 0.4s ease'
+        }}>
+          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+            <img src="/cozify-logo-light.png" alt="coZify" style={{ height: 44, objectFit: 'contain', filter: dark ? 'invert(1) hue-rotate(180deg) brightness(1.15) drop-shadow(0 0 12px rgba(34,197,94,0.45))' : 'none', marginBottom: '1rem' }} />
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, letterSpacing: '-0.03em', color: textColor, marginBottom: '0.5rem' }}>Welcome to coZify</h1>
+            <p style={{ color: mutedText, fontSize: '0.9rem', lineHeight: 1.5 }}>Authenticate to access the official promotional platform.</p>
+          </div>
+          <LoginForm dark={dark} onAuthSuccess={() => {}} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ background: bodyBg, color: textColor, minHeight: '100dvh', transition: 'all 0.4s ease', fontFamily: 'Space Grotesk,sans-serif', overflowX: 'hidden' }}>
@@ -377,6 +588,11 @@ export default function App() {
             </div>
           </Modal>
         )}
+        {modal === 'login' && (
+          <Modal title="Access coZify Platform" onClose={() => setModal(null)}>
+            <LoginForm dark={dark} onAuthSuccess={() => setModal(null)} />
+          </Modal>
+        )}
       </AnimatePresence>
 
       {/* ─── NAV ─── */}
@@ -399,6 +615,17 @@ export default function App() {
             </motion.span>
             {dark ? 'Light' : 'Dark'}
           </motion.button>
+          {user ? (
+            <motion.button whileTap={{ scale: 0.9 }} onClick={() => signOut(auth)}
+              style={{ background: 'rgba(255,77,141,0.1)', border: '1px solid rgba(255,77,141,0.25)', borderRadius: 999, padding: '0.45rem 1rem', cursor: 'pointer', color: '#FF4D8D', fontSize: '0.8rem', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 600, transition: 'all 0.3s ease', whiteSpace: 'nowrap' }}>
+              🚪 Sign Out
+            </motion.button>
+          ) : (
+            <motion.button whileTap={{ scale: 0.9 }} onClick={() => setModal('login')}
+              style={{ background: 'rgba(123,97,255,0.12)', border: '1px solid rgba(123,97,255,0.3)', borderRadius: 999, padding: '0.45rem 1rem', cursor: 'pointer', color: '#7B61FF', fontSize: '0.8rem', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 600, transition: 'all 0.3s ease', whiteSpace: 'nowrap' }}>
+              🔑 Sign In
+            </motion.button>
+          )}
           <DownloadBtn />
         </div>
 
@@ -422,6 +649,17 @@ export default function App() {
               style={{ background: 'linear-gradient(135deg,#7B61FF,#00E5FF)', color: 'white', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 600, border: 'none', padding: '0.75rem 1.5rem', borderRadius: 999, textDecoration: 'none', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center', boxShadow: '0 0 24px rgba(123,97,255,0.4)' }}>
               📥 Download APK — Free
             </a>
+            {user ? (
+              <motion.button whileTap={{ scale: 0.95 }} onClick={() => { signOut(auth); setMobileMenuOpen(false); }}
+                style={{ background: 'rgba(255,77,141,0.08)', border: '1px solid rgba(255,77,141,0.2)', borderRadius: 999, padding: '0.7rem 1.25rem', cursor: 'pointer', color: '#FF4D8D', fontSize: '0.9rem', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
+                🚪 Sign Out ({user.displayName || user.email})
+              </motion.button>
+            ) : (
+              <motion.button whileTap={{ scale: 0.95 }} onClick={() => { setModal('login'); setMobileMenuOpen(false); }}
+                style={{ background: 'rgba(123,97,255,0.08)', border: '1px solid rgba(123,97,255,0.25)', borderRadius: 999, padding: '0.7rem 1.25rem', cursor: 'pointer', color: '#7B61FF', fontSize: '0.9rem', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
+                🔑 Sign In / Register
+              </motion.button>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -567,7 +805,7 @@ export default function App() {
       <div style={{ width: '100%', height: 1, background: divider }} />
 
       {/* ─── SUGGESTION SECTION ─── */}
-      <SuggestionSection dark={dark} />
+      <SuggestionSection dark={dark} user={user} onOpenLogin={() => setModal('login')} />
 
       <div style={{ width: '100%', height: 1, background: divider }} />
 
