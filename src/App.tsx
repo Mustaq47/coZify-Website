@@ -97,12 +97,12 @@ function PhoneMockup({ dark }: { dark: boolean }) {
 // ─── Modal ────────────────────────────────────────────────────────────────────
 
 function Modal({ title, onClose, dark, children }: { title: string; onClose: () => void; dark: boolean; children: React.ReactNode }) {
-  const modalBg = dark 
-    ? 'linear-gradient(135deg, #0e0e1f 0%, #05050f 100%)' 
+  const modalBg = dark
+    ? 'linear-gradient(135deg, #0e0e1f 0%, #05050f 100%)'
     : 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)';
   const modalBorder = dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(22,163,74,0.08)';
-  const modalShadow = dark 
-    ? '0 20px 40px rgba(0,0,0,0.5), 0 0 50px rgba(74,222,128,0.03)' 
+  const modalShadow = dark
+    ? '0 20px 40px rgba(0,0,0,0.5), 0 0 50px rgba(74,222,128,0.03)'
     : '0 20px 40px rgba(0,0,0,0.05), 0 0 50px rgba(22,163,74,0.03)';
   const titleColor = dark ? '#F8FAFC' : '#111827';
   const closeBtnBg = dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
@@ -110,32 +110,32 @@ function Modal({ title, onClose, dark, children }: { title: string; onClose: () 
   const closeBtnHoverBg = dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }} 
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      style={{ 
-        position: 'fixed', inset: 0, 
-        background: dark ? 'rgba(0,0,0,0.6)' : 'rgba(15,23,42,0.3)', 
+      style={{
+        position: 'fixed', inset: 0,
+        background: dark ? 'rgba(0,0,0,0.6)' : 'rgba(15,23,42,0.3)',
         backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-        zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' 
+        zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem'
       }}
       onClick={onClose}
     >
-      <motion.div 
-        initial={{ opacity: 0, y: 30, scale: 0.96 }} 
-        animate={{ opacity: 1, y: 0, scale: 1 }} 
-        exit={{ opacity: 0, y: 15, scale: 0.98 }} 
+      <motion.div
+        initial={{ opacity: 0, y: 30, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 15, scale: 0.98 }}
         transition={{ type: 'spring', duration: 0.35, bounce: 0.12 }}
-        style={{ 
-          background: modalBg, 
-          border: modalBorder, 
-          borderRadius: '1.75rem', 
-          padding: '2rem', 
-          maxWidth: 480, 
-          width: '100%', 
-          maxHeight: '85dvh', 
+        style={{
+          background: modalBg,
+          border: modalBorder,
+          borderRadius: '1.75rem',
+          padding: '2rem',
+          maxWidth: 480,
+          width: '100%',
+          maxHeight: '85dvh',
           overflowY: 'auto',
           boxShadow: modalShadow,
           position: 'relative'
@@ -156,13 +156,13 @@ function Modal({ title, onClose, dark, children }: { title: string; onClose: () 
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <h2 style={{ fontWeight: 800, fontSize: '1.35rem', letterSpacing: '-0.03em', color: titleColor, margin: 0 }}>{title}</h2>
-          <motion.button 
+          <motion.button
             whileHover={{ scale: 1.05, backgroundColor: closeBtnHoverBg }}
             whileTap={{ scale: 0.95 }}
-            onClick={onClose} 
-            style={{ 
-              background: closeBtnBg, border: 'none', color: closeBtnColor, 
-              borderRadius: '50%', width: 32, height: 32, cursor: 'pointer', 
+            onClick={onClose}
+            style={{
+              background: closeBtnBg, border: 'none', color: closeBtnColor,
+              borderRadius: '50%', width: 32, height: 32, cursor: 'pointer',
               fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
               transition: 'background-color 0.2s'
             }}
@@ -213,19 +213,19 @@ function LoginForm({ dark, onAuthSuccess }: { dark: boolean; onAuthSuccess: () =
   const textColor = dark ? '#F8FAFC' : '#111827';
   const inputBg = dark ? 'rgba(255,255,255,0.03)' : '#ffffff';
   const inputBorder = dark ? 'rgba(255,255,255,0.08)' : '#e2e8f0';
-  const primaryGradient = dark 
-    ? 'linear-gradient(135deg, #4ADE80, #06B6D4)' 
+  const primaryGradient = dark
+    ? 'linear-gradient(135deg, #4ADE80, #06B6D4)'
     : 'linear-gradient(135deg, #16A34A, #2563EB)';
   const googleBg = dark ? 'rgba(255,255,255,0.04)' : '#ffffff';
   const googleBorder = dark ? 'rgba(255,255,255,0.08)' : '#e2e8f0';
 
   const getInputStyle = (field: string): React.CSSProperties => ({
     width: '100%', padding: '0.8rem 1.1rem', borderRadius: '0.875rem',
-    background: inputBg, 
-    border: `1px solid ${focusedField === field ? primaryGreen : inputBorder}`, 
+    background: inputBg,
+    border: `1px solid ${focusedField === field ? primaryGreen : inputBorder}`,
     color: textColor,
     fontFamily: 'Space Grotesk,sans-serif', fontSize: '0.95rem', outline: 'none',
-    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)', 
+    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
     boxSizing: 'border-box',
     marginBottom: '0.85rem',
     boxShadow: focusedField === field ? `0 0 14px ${primaryGreen}28` : 'none'
@@ -294,20 +294,20 @@ function LoginForm({ dark, onAuthSuccess }: { dark: boolean; onAuthSuccess: () =
         {isSignUp && (
           <div>
             <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: labelColor, marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Full Name</label>
-            <input type="text" placeholder="e.g. Mustaq" required value={name} 
+            <input type="text" placeholder="e.g. Mustaq" required value={name}
               onFocus={() => setFocusedField('name')} onBlur={() => setFocusedField(null)}
               onChange={(e) => setName(e.target.value)} style={getInputStyle('name')} />
           </div>
         )}
         <div>
           <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: labelColor, marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Email Address</label>
-          <input type="email" placeholder="e.g. email@example.com" required value={email} 
+          <input type="email" placeholder="e.g. email@example.com" required value={email}
             onFocus={() => setFocusedField('email')} onBlur={() => setFocusedField(null)}
             onChange={(e) => setEmail(e.target.value)} style={getInputStyle('email')} />
         </div>
         <div>
           <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: labelColor, marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Password</label>
-          <input type="password" placeholder="••••••••••••" required value={password} 
+          <input type="password" placeholder="••••••••••••" required value={password}
             onFocus={() => setFocusedField('password')} onBlur={() => setFocusedField(null)}
             onChange={(e) => setPassword(e.target.value)} style={getInputStyle('password')} />
         </div>
@@ -574,7 +574,7 @@ export default function App() {
   const navBorder = dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
   const divider = `linear-gradient(90deg,transparent,${dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'},transparent)`;
 
-  const apkHref = '/coZify_latest_debug.apk';
+  const apkHref = '/app_debug.apk';
 
   const DownloadBtn = ({ style }: { style?: React.CSSProperties }) => {
     if (user) {
@@ -630,11 +630,11 @@ export default function App() {
                   <p>{item.a}</p>
                 </div>
               ))}
-              <div style={{ 
-                marginTop: '1.5rem', padding: '1.25rem', 
-                background: dark ? 'rgba(74,222,128,0.06)' : 'rgba(22,163,74,0.04)', 
-                border: dark ? '1px solid rgba(74,222,128,0.2)' : '1px solid rgba(22,163,74,0.15)', 
-                borderRadius: '1.25rem' 
+              <div style={{
+                marginTop: '1.5rem', padding: '1.25rem',
+                background: dark ? 'rgba(74,222,128,0.06)' : 'rgba(22,163,74,0.04)',
+                border: dark ? '1px solid rgba(74,222,128,0.2)' : '1px solid rgba(22,163,74,0.15)',
+                borderRadius: '1.25rem'
               }}>
                 <p style={{ color: primaryGreen, fontWeight: 700, marginBottom: '0.25rem' }}>Still need help?</p>
                 <p>Email <strong style={{ color: dark ? 'white' : '#111827' }}>support@cozify.app</strong> — we respond within 24 hours.</p>
@@ -651,11 +651,11 @@ export default function App() {
                 { icon: '🤝', label: 'Partnerships', value: 'hello@cozify.app' },
                 { icon: '📰', label: 'Press', value: 'press@cozify.app' },
               ].map((c) => (
-                <div key={c.label} style={{ 
-                  display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', 
-                  background: dark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', 
-                  border: dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)', 
-                  borderRadius: '1rem', marginBottom: '0.75rem' 
+                <div key={c.label} style={{
+                  display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem',
+                  background: dark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+                  border: dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)',
+                  borderRadius: '1rem', marginBottom: '0.75rem'
                 }}>
                   <span style={{ fontSize: '1.4rem' }}>{c.icon}</span>
                   <div>
