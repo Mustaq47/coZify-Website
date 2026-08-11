@@ -2,7 +2,7 @@ import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { useRef, useState, useEffect } from 'react';
 import { auth, db } from './firebase';
 import { onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -96,17 +96,79 @@ function PhoneMockup({ dark }: { dark: boolean }) {
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
 
-function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+function Modal({ title, onClose, dark, children }: { title: string; onClose: () => void; dark: boolean; children: React.ReactNode }) {
+  const modalBg = dark 
+    ? 'linear-gradient(135deg, #0e0e1f 0%, #05050f 100%)' 
+    : 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)';
+  const modalBorder = dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(22,163,74,0.08)';
+  const modalShadow = dark 
+    ? '0 20px 40px rgba(0,0,0,0.5), 0 0 50px rgba(74,222,128,0.03)' 
+    : '0 20px 40px rgba(0,0,0,0.05), 0 0 50px rgba(22,163,74,0.03)';
+  const titleColor = dark ? '#F8FAFC' : '#111827';
+  const closeBtnBg = dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
+  const closeBtnColor = dark ? '#ffffff' : '#475569';
+  const closeBtnHoverBg = dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
+
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
-      onClick={onClose}>
-      <motion.div initial={{ opacity: 0, y: 40, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20 }} transition={{ duration: 0.3, ease: 'easeOut' as const }}
-        style={{ background: 'linear-gradient(135deg,#0f0f2a,#1a0b2e)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '1.5rem', padding: '1.75rem', maxWidth: 540, width: '100%', maxHeight: '80dvh', overflowY: 'auto' }}
-        onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <h2 style={{ fontWeight: 700, fontSize: '1.2rem', letterSpacing: '-0.03em', color: '#fff' }}>{title}</h2>
-          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.08)', border: 'none', color: 'white', borderRadius: '50%', width: 32, height: 32, cursor: 'pointer', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      style={{ 
+        position: 'fixed', inset: 0, 
+        background: dark ? 'rgba(0,0,0,0.6)' : 'rgba(15,23,42,0.3)', 
+        backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+        zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' 
+      }}
+      onClick={onClose}
+    >
+      <motion.div 
+        initial={{ opacity: 0, y: 30, scale: 0.96 }} 
+        animate={{ opacity: 1, y: 0, scale: 1 }} 
+        exit={{ opacity: 0, y: 15, scale: 0.98 }} 
+        transition={{ type: 'spring', duration: 0.35, bounce: 0.12 }}
+        style={{ 
+          background: modalBg, 
+          border: modalBorder, 
+          borderRadius: '1.75rem', 
+          padding: '2rem', 
+          maxWidth: 480, 
+          width: '100%', 
+          maxHeight: '85dvh', 
+          overflowY: 'auto',
+          boxShadow: modalShadow,
+          position: 'relative'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Glow Effects inside modal */}
+        <div style={{
+          position: 'absolute', top: -40, right: -40, width: 120, height: 120,
+          background: dark ? 'rgba(74,222,128,0.08)' : 'rgba(22,163,74,0.05)',
+          borderRadius: '50%', filter: 'blur(30px)', pointerEvents: 'none'
+        }} />
+        <div style={{
+          position: 'absolute', bottom: -40, left: -40, width: 120, height: 120,
+          background: dark ? 'rgba(96,165,250,0.08)' : 'rgba(37,99,235,0.05)',
+          borderRadius: '50%', filter: 'blur(30px)', pointerEvents: 'none'
+        }} />
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <h2 style={{ fontWeight: 800, fontSize: '1.35rem', letterSpacing: '-0.03em', color: titleColor, margin: 0 }}>{title}</h2>
+          <motion.button 
+            whileHover={{ scale: 1.05, backgroundColor: closeBtnHoverBg }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onClose} 
+            style={{ 
+              background: closeBtnBg, border: 'none', color: closeBtnColor, 
+              borderRadius: '50%', width: 32, height: 32, cursor: 'pointer', 
+              fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'background-color 0.2s'
+            }}
+          >
+            ✕
+          </motion.button>
         </div>
         {children}
       </motion.div>
@@ -118,6 +180,24 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
 
 // ─── Login Form Component ─────────────────────────────────────────────────────
 
+const syncWebUser = async (user: any, displayName?: string | null) => {
+  const userRef = doc(db, "users", `wb-${user.uid}`);
+  const authMethod = user.providerData?.[0]?.providerId === "google.com" || user.email?.endsWith("@gmail.com")
+    ? "google"
+    : "email";
+  await setDoc(userRef, {
+    uid: `wb-${user.uid}`,
+    email: (user.email || `user_${user.uid}@cozify.local`).toLowerCase(),
+    displayName: displayName || user.displayName || user.email?.split("@")[0] || "coZify Web User",
+    photoURL: user.photoURL || null,
+    platform: "Web",
+    authMethod,
+    appVersion: "1.0.0-web",
+    lastLoginAt: new Date().toISOString(),
+    updatedAt: serverTimestamp(),
+  }, { merge: true });
+};
+
 function LoginForm({ dark, onAuthSuccess }: { dark: boolean; onAuthSuccess: () => void }) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
@@ -127,28 +207,28 @@ function LoginForm({ dark, onAuthSuccess }: { dark: boolean; onAuthSuccess: () =
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
-  // Calibrated Design Tokens
+  // Calibrated Design Tokens matching Master visual design skill
   const primaryGreen = dark ? '#4ADE80' : '#16A34A';
-  const labelColor = dark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.5)';
+  const labelColor = dark ? 'rgba(255,255,255,0.5)' : 'rgba(15,23,42,0.6)';
   const textColor = dark ? '#F8FAFC' : '#111827';
-  const inputBg = dark ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.85)';
-  const inputBorder = dark ? 'rgba(255,255,255,0.07)' : 'rgba(22,163,74,0.12)';
+  const inputBg = dark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)';
+  const inputBorder = dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
   const primaryGradient = dark 
     ? 'linear-gradient(135deg, #4ADE80, #06B6D4)' 
     : 'linear-gradient(135deg, #16A34A, #2563EB)';
-  const googleBg = dark ? 'rgba(255,255,255,0.03)' : '#ffffff';
+  const googleBg = dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)';
   const googleBorder = dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
 
   const getInputStyle = (field: string): React.CSSProperties => ({
-    width: '100%', padding: '0.75rem 1rem', borderRadius: '0.75rem',
+    width: '100%', padding: '0.8rem 1.1rem', borderRadius: '0.875rem',
     background: inputBg, 
     border: `1px solid ${focusedField === field ? primaryGreen : inputBorder}`, 
     color: textColor,
     fontFamily: 'Space Grotesk,sans-serif', fontSize: '0.95rem', outline: 'none',
     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)', 
     boxSizing: 'border-box',
-    marginBottom: '0.75rem',
-    boxShadow: focusedField === field ? `0 0 16px ${primaryGreen}22` : 'none'
+    marginBottom: '0.85rem',
+    boxShadow: focusedField === field ? `0 0 14px ${primaryGreen}28` : 'none'
   });
 
   const handleEmailAuth = async (e: React.FormEvent) => {
@@ -166,8 +246,14 @@ function LoginForm({ dark, onAuthSuccess }: { dark: boolean; onAuthSuccess: () =
           const { updateProfile } = await import('firebase/auth');
           await updateProfile(credential.user, { displayName: name });
         }
+        if (credential.user) {
+          await syncWebUser(credential.user, name);
+        }
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        const credential = await signInWithEmailAndPassword(auth, email, password);
+        if (credential.user) {
+          await syncWebUser(credential.user, null);
+        }
       }
       onAuthSuccess();
     } catch (err: any) {
@@ -187,7 +273,10 @@ function LoginForm({ dark, onAuthSuccess }: { dark: boolean; onAuthSuccess: () =
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      const credential = await signInWithPopup(auth, provider);
+      if (credential.user) {
+        await syncWebUser(credential.user, null);
+      }
       onAuthSuccess();
     } catch (err: any) {
       console.error(err);
@@ -252,10 +341,12 @@ function LoginForm({ dark, onAuthSuccess }: { dark: boolean; onAuthSuccess: () =
         Sign In with Google
       </motion.button>
 
-      <button type="button" onClick={() => setIsSignUp(!isSignUp)}
+      <motion.button type="button" onClick={() => setIsSignUp(!isSignUp)}
+        whileHover={{ scale: 1.02, color: dark ? '#5bf596' : '#118a38' }}
+        whileTap={{ scale: 0.98 }}
         style={{ background: 'none', border: 'none', color: primaryGreen, fontSize: '0.85rem', cursor: 'pointer', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 600, textAlign: 'center', marginTop: '0.5rem', transition: 'color 0.2s' }}>
         {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Create one"}
-      </button>
+      </motion.button>
     </div>
   );
 }
@@ -314,7 +405,7 @@ function SuggestionSection({ dark, user, onOpenLogin }: SuggestionProps) {
       email: form.email,
       type: form.type,
       message: form.message,
-      uid: user.uid,
+      uid: `wb-${user.uid}`,
       timestamp: serverTimestamp()
     })
       .then(() => {
@@ -477,6 +568,7 @@ export default function App() {
   const cardBorder = dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
   const mutedText = dark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.5)';
   const textColor = dark ? '#fff' : '#111';
+  const primaryGreen = dark ? '#4ADE80' : '#16A34A';
   const bodyBg = dark ? 'linear-gradient(180deg,#000000 0%,#0a0a1f 50%,#1a0b2e 100%)' : 'linear-gradient(180deg,#f0f4ff 0%,#e8f0ff 60%,#f5e8ff 100%)';
   const navBg = dark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.75)';
   const navBorder = dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
@@ -505,27 +597,27 @@ export default function App() {
       {/* ─── MODALS ─── */}
       <AnimatePresence>
         {modal === 'privacy' && (
-          <Modal title="Privacy Policy" onClose={() => setModal(null)}>
-            <div style={{ color: 'rgba(255,255,255,0.6)', lineHeight: 1.8, fontSize: '0.9rem' }}>
-              <h3 style={{ color: '#7B61FF', fontWeight: 600, marginBottom: '0.5rem' }}>Your Data, Your Control</h3>
+          <Modal title="Privacy Policy" onClose={() => setModal(null)} dark={dark}>
+            <div style={{ color: dark ? 'rgba(255,255,255,0.6)' : 'rgba(15,23,42,0.7)', lineHeight: 1.8, fontSize: '0.9rem' }}>
+              <h3 style={{ color: primaryGreen, fontWeight: 700, marginBottom: '0.5rem', letterSpacing: '-0.02em' }}>Your Data, Your Control</h3>
               <p style={{ marginBottom: '1rem' }}>coZify is designed with privacy as a core principle. We collect only what you choose to enter.</p>
-              <h3 style={{ color: '#7B61FF', fontWeight: 600, marginBottom: '0.5rem' }}>What We Collect</h3>
+              <h3 style={{ color: primaryGreen, fontWeight: 700, marginBottom: '0.5rem', letterSpacing: '-0.02em' }}>What We Collect</h3>
               <p style={{ marginBottom: '1rem' }}>Transaction data, category names, and budget settings stored locally on your device. Cloud sync is optional and encrypted.</p>
-              <h3 style={{ color: '#7B61FF', fontWeight: 600, marginBottom: '0.5rem' }}>What We Don't Do</h3>
+              <h3 style={{ color: primaryGreen, fontWeight: 700, marginBottom: '0.5rem', letterSpacing: '-0.02em' }}>What We Don't Do</h3>
               <ul style={{ paddingLeft: '1.25rem', marginBottom: '1rem' }}>
                 <li>Never sell your data to third parties</li>
                 <li>No advertising networks</li>
                 <li>No cross-app tracking</li>
                 <li>No access to banking credentials</li>
               </ul>
-              <h3 style={{ color: '#7B61FF', fontWeight: 600, marginBottom: '0.5rem' }}>Security</h3>
+              <h3 style={{ color: primaryGreen, fontWeight: 700, marginBottom: '0.5rem', letterSpacing: '-0.02em' }}>Security</h3>
               <p>All data encrypted at rest with AES-256. Optional biometric lock.</p>
             </div>
           </Modal>
         )}
         {modal === 'support' && (
-          <Modal title="Help & Support" onClose={() => setModal(null)}>
-            <div style={{ color: 'rgba(255,255,255,0.6)', lineHeight: 1.8, fontSize: '0.9rem' }}>
+          <Modal title="Help & Support" onClose={() => setModal(null)} dark={dark}>
+            <div style={{ color: dark ? 'rgba(255,255,255,0.6)' : 'rgba(15,23,42,0.7)', lineHeight: 1.8, fontSize: '0.9rem' }}>
               {[
                 { q: 'How do I add a transaction?', a: 'Tap + on the Home screen, fill in amount, category, and note.' },
                 { q: 'Can I create custom categories?', a: 'Yes! Go to Categories in settings and tap "Add Category".' },
@@ -533,32 +625,42 @@ export default function App() {
                 { q: 'How do I change language?', a: 'Go to Profile → Language & Region. 18+ languages available.' },
                 { q: 'Is coZify really free?', a: 'Yes. Completely free. No ads, no subscriptions.' },
               ].map((item) => (
-                <div key={item.q} style={{ marginBottom: '1.1rem' }}>
-                  <p style={{ color: 'white', fontWeight: 600, marginBottom: '0.2rem' }}>{item.q}</p>
+                <div key={item.q} style={{ marginBottom: '1.15rem' }}>
+                  <p style={{ color: dark ? 'white' : '#111827', fontWeight: 700, marginBottom: '0.2rem', letterSpacing: '-0.01em' }}>{item.q}</p>
                   <p>{item.a}</p>
                 </div>
               ))}
-              <div style={{ marginTop: '1.25rem', padding: '1rem', background: 'rgba(0,229,255,0.06)', border: '1px solid rgba(0,229,255,0.2)', borderRadius: '1rem' }}>
-                <p style={{ color: '#00E5FF', fontWeight: 600, marginBottom: '0.25rem' }}>Still need help?</p>
-                <p>Email <strong style={{ color: 'white' }}>support@cozify.app</strong> — we respond within 24 hours.</p>
+              <div style={{ 
+                marginTop: '1.5rem', padding: '1.25rem', 
+                background: dark ? 'rgba(74,222,128,0.06)' : 'rgba(22,163,74,0.04)', 
+                border: dark ? '1px solid rgba(74,222,128,0.2)' : '1px solid rgba(22,163,74,0.15)', 
+                borderRadius: '1.25rem' 
+              }}>
+                <p style={{ color: primaryGreen, fontWeight: 700, marginBottom: '0.25rem' }}>Still need help?</p>
+                <p>Email <strong style={{ color: dark ? 'white' : '#111827' }}>support@cozify.app</strong> — we respond within 24 hours.</p>
               </div>
             </div>
           </Modal>
         )}
         {modal === 'contact' && (
-          <Modal title="Contact Us" onClose={() => setModal(null)}>
-            <div style={{ color: 'rgba(255,255,255,0.6)', lineHeight: 1.8, fontSize: '0.9rem' }}>
+          <Modal title="Contact Us" onClose={() => setModal(null)} dark={dark}>
+            <div style={{ color: dark ? 'rgba(255,255,255,0.6)' : 'rgba(15,23,42,0.7)', lineHeight: 1.8, fontSize: '0.9rem' }}>
               <p style={{ marginBottom: '1.25rem' }}>Reach out for support, feedback, partnerships, or press.</p>
               {[
                 { icon: '✉️', label: 'General / Support', value: 'support@cozify.app' },
                 { icon: '🤝', label: 'Partnerships', value: 'hello@cozify.app' },
                 { icon: '📰', label: 'Press', value: 'press@cozify.app' },
               ].map((c) => (
-                <div key={c.label} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '0.875rem', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '0.875rem', marginBottom: '0.625rem' }}>
-                  <span style={{ fontSize: '1.3rem' }}>{c.icon}</span>
+                <div key={c.label} style={{ 
+                  display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', 
+                  background: dark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', 
+                  border: dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)', 
+                  borderRadius: '1rem', marginBottom: '0.75rem' 
+                }}>
+                  <span style={{ fontSize: '1.4rem' }}>{c.icon}</span>
                   <div>
-                    <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.72rem' }}>{c.label}</p>
-                    <p style={{ color: '#7B61FF', fontWeight: 600 }}>{c.value}</p>
+                    <p style={{ color: dark ? 'rgba(255,255,255,0.45)' : 'rgba(15,23,42,0.5)', fontSize: '0.72rem', margin: '0 0 0.15rem 0' }}>{c.label}</p>
+                    <p style={{ color: primaryGreen, fontWeight: 700, margin: 0 }}>{c.value}</p>
                   </div>
                 </div>
               ))}
@@ -566,7 +668,7 @@ export default function App() {
           </Modal>
         )}
         {modal === 'login' && (
-          <Modal title="Access coZify Platform" onClose={() => setModal(null)}>
+          <Modal title="Access coZify Platform" onClose={() => setModal(null)} dark={dark}>
             <LoginForm dark={dark} onAuthSuccess={() => setModal(null)} />
           </Modal>
         )}
