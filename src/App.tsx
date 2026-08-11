@@ -181,12 +181,12 @@ function Modal({ title, onClose, dark, children }: { title: string; onClose: () 
 // ─── Login Form Component ─────────────────────────────────────────────────────
 
 const syncWebUser = async (user: any, displayName?: string | null) => {
-  const userRef = doc(db, "users", `wb-${user.uid}`);
+  const userRef = doc(db, "users", user.uid);
   const authMethod = user.providerData?.[0]?.providerId === "google.com" || user.email?.endsWith("@gmail.com")
     ? "google"
     : "email";
   await setDoc(userRef, {
-    uid: `wb-${user.uid}`,
+    uid: user.uid,
     email: (user.email || `user_${user.uid}@cozify.local`).toLowerCase(),
     displayName: displayName || user.displayName || user.email?.split("@")[0] || "coZify Web User",
     photoURL: user.photoURL || null,
@@ -211,13 +211,13 @@ function LoginForm({ dark, onAuthSuccess }: { dark: boolean; onAuthSuccess: () =
   const primaryGreen = dark ? '#4ADE80' : '#16A34A';
   const labelColor = dark ? 'rgba(255,255,255,0.5)' : 'rgba(15,23,42,0.6)';
   const textColor = dark ? '#F8FAFC' : '#111827';
-  const inputBg = dark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)';
-  const inputBorder = dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+  const inputBg = dark ? 'rgba(255,255,255,0.03)' : '#ffffff';
+  const inputBorder = dark ? 'rgba(255,255,255,0.08)' : '#e2e8f0';
   const primaryGradient = dark 
     ? 'linear-gradient(135deg, #4ADE80, #06B6D4)' 
     : 'linear-gradient(135deg, #16A34A, #2563EB)';
-  const googleBg = dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)';
-  const googleBorder = dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+  const googleBg = dark ? 'rgba(255,255,255,0.04)' : '#ffffff';
+  const googleBorder = dark ? 'rgba(255,255,255,0.08)' : '#e2e8f0';
 
   const getInputStyle = (field: string): React.CSSProperties => ({
     width: '100%', padding: '0.8rem 1.1rem', borderRadius: '0.875rem',
@@ -405,7 +405,7 @@ function SuggestionSection({ dark, user, onOpenLogin }: SuggestionProps) {
       email: form.email,
       type: form.type,
       message: form.message,
-      uid: `wb-${user.uid}`,
+      uid: user.uid,
       timestamp: serverTimestamp()
     })
       .then(() => {
