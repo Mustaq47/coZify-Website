@@ -97,79 +97,89 @@ function PhoneMockup({ dark }: { dark: boolean }) {
 // ─── Modal ────────────────────────────────────────────────────────────────────
 
 function Modal({ title, onClose, dark, children }: { title: string; onClose: () => void; dark: boolean; children: React.ReactNode }) {
-  const modalBg = dark
-    ? 'linear-gradient(135deg, #0e0e1f 0%, #05050f 100%)'
-    : 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)';
-  const modalBorder = dark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(22,163,74,0.08)';
-  const modalShadow = dark
-    ? '0 20px 40px rgba(0,0,0,0.5), 0 0 50px rgba(74,222,128,0.03)'
-    : '0 20px 40px rgba(0,0,0,0.05), 0 0 50px rgba(22,163,74,0.03)';
-  const titleColor = dark ? '#F8FAFC' : '#111827';
-  const closeBtnBg = dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
-  const closeBtnColor = dark ? '#ffffff' : '#475569';
-  const closeBtnHoverBg = dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
+  const isLogin = title.includes('Access') || title.includes('Platform');
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
+      transition={{ duration: 0.25 }}
       style={{
         position: 'fixed', inset: 0,
-        background: dark ? 'rgba(0,0,0,0.6)' : 'rgba(15,23,42,0.3)',
-        backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-        zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem'
+        background: dark ? 'rgba(0,0,0,0.75)' : 'rgba(15,23,42,0.4)',
+        backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
+        zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem'
       }}
       onClick={onClose}
     >
+      {/* Outer shell — Double-Bezel architecture */}
       <motion.div
-        initial={{ opacity: 0, y: 30, scale: 0.96 }}
+        initial={{ opacity: 0, y: 40, scale: 0.92 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 15, scale: 0.98 }}
-        transition={{ type: 'spring', duration: 0.35, bounce: 0.12 }}
+        exit={{ opacity: 0, y: 20, scale: 0.96 }}
+        transition={{ type: 'spring', damping: 28, stiffness: 280 }}
         style={{
-          background: modalBg,
-          border: modalBorder,
-          borderRadius: '1.75rem',
-          padding: '2rem',
-          maxWidth: 480,
+          background: dark
+            ? 'linear-gradient(160deg, rgba(30,30,35,0.95) 0%, rgba(10,10,14,0.98) 100%)'
+            : 'linear-gradient(160deg, #ffffff 0%, #f9fafb 100%)',
+          border: dark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)',
+          borderRadius: isLogin ? '2rem' : '1.75rem',
+          padding: isLogin ? '2.5rem 2.25rem' : '2rem',
+          maxWidth: isLogin ? 420 : 480,
           width: '100%',
           maxHeight: '85dvh',
           overflowY: 'auto',
-          boxShadow: modalShadow,
+          boxShadow: dark
+            ? '0 32px 64px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04)'
+            : '0 32px 64px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.8)',
           position: 'relative'
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Glow Effects inside modal */}
-        <div style={{
-          position: 'absolute', top: -40, right: -40, width: 120, height: 120,
-          background: dark ? 'rgba(74,222,128,0.08)' : 'rgba(22,163,74,0.05)',
-          borderRadius: '50%', filter: 'blur(30px)', pointerEvents: 'none'
-        }} />
-        <div style={{
-          position: 'absolute', bottom: -40, left: -40, width: 120, height: 120,
-          background: dark ? 'rgba(96,165,250,0.08)' : 'rgba(37,99,235,0.05)',
-          borderRadius: '50%', filter: 'blur(30px)', pointerEvents: 'none'
-        }} />
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h2 style={{ fontWeight: 800, fontSize: '1.35rem', letterSpacing: '-0.03em', color: titleColor, margin: 0 }}>{title}</h2>
+        {/* Top header */}
+        {!isLogin && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem' }}>
+            <h2 style={{
+              fontWeight: 700, fontSize: '1.35rem', letterSpacing: '-0.03em',
+              color: dark ? '#f5f5f7' : '#1d1d1f', margin: 0,
+              fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif'
+            }}>{title}</h2>
+            <motion.button
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.92 }}
+              onClick={onClose}
+              style={{
+                background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                border: 'none',
+                color: dark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)',
+                borderRadius: '50%', width: 32, height: 32, cursor: 'pointer',
+                fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: 'all 0.2s cubic-bezier(0.32,0.72,0,1)'
+              }}
+            >
+              ✕
+            </motion.button>
+          </div>
+        )}
+        {isLogin && (
           <motion.button
-            whileHover={{ scale: 1.05, backgroundColor: closeBtnHoverBg }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.92 }}
             onClick={onClose}
             style={{
-              background: closeBtnBg, border: 'none', color: closeBtnColor,
+              position: 'absolute', top: '1.25rem', right: '1.25rem',
+              background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+              border: 'none',
+              color: dark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)',
               borderRadius: '50%', width: 32, height: 32, cursor: 'pointer',
-              fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'background-color 0.2s'
+              fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.2s cubic-bezier(0.32,0.72,0,1)', zIndex: 2
             }}
           >
             ✕
           </motion.button>
-        </div>
+        )}
         {children}
       </motion.div>
     </motion.div>
@@ -207,146 +217,176 @@ function LoginForm({ dark, onAuthSuccess }: { dark: boolean; onAuthSuccess: () =
   const [loading, setLoading] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
-  // Calibrated Design Tokens matching Master visual design skill
-  const primaryGreen = dark ? '#4ADE80' : '#16A34A';
-  const labelColor = dark ? 'rgba(255,255,255,0.5)' : 'rgba(15,23,42,0.6)';
+  const accentPurple = '#7B61FF';
+  const accentCyan = '#00E5FF';
+  const primaryGradient = 'linear-gradient(135deg, #7B61FF, #00E5FF)';
   const textColor = dark ? '#F8FAFC' : '#111827';
-  const inputBg = dark ? 'rgba(255,255,255,0.03)' : '#ffffff';
-  const inputBorder = dark ? 'rgba(255,255,255,0.08)' : '#e2e8f0';
-  const primaryGradient = dark
-    ? 'linear-gradient(135deg, #4ADE80, #06B6D4)'
-    : 'linear-gradient(135deg, #16A34A, #2563EB)';
-  const googleBg = dark ? 'rgba(255,255,255,0.04)' : '#ffffff';
-  const googleBorder = dark ? 'rgba(255,255,255,0.08)' : '#e2e8f0';
+  const mutedColor = dark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.5)';
+  const inputBg = dark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)';
+  const borderDefault = dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)';
+  const focusBorder = dark ? accentPurple : accentPurple;
+  const sfFont = 'Space Grotesk, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
 
   const getInputStyle = (field: string): React.CSSProperties => ({
-    width: '100%', padding: '0.8rem 1.1rem', borderRadius: '0.875rem',
+    width: '100%', padding: '0.9rem 1rem', borderRadius: '0.875rem',
     background: inputBg,
-    border: `1px solid ${focusedField === field ? primaryGreen : inputBorder}`,
-    color: textColor,
-    fontFamily: 'Space Grotesk,sans-serif', fontSize: '0.95rem', outline: 'none',
-    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-    boxSizing: 'border-box',
-    marginBottom: '0.85rem',
-    boxShadow: focusedField === field ? `0 0 14px ${primaryGreen}28` : 'none'
+    border: `1px solid ${focusedField === field ? focusBorder : borderDefault}`,
+    color: textColor, fontFamily: sfFont, fontSize: '0.95rem', outline: 'none',
+    transition: 'all 0.25s cubic-bezier(0.32,0.72,0,1)',
+    boxSizing: 'border-box' as const,
+    boxShadow: focusedField === field ? `0 0 0 3px ${accentPurple}22` : 'none'
   });
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
-
     try {
       if (isSignUp) {
-        if (password.length < 6) {
-          throw new Error("Password should be at least 6 characters.");
-        }
+        if (password.length < 6) throw new Error("Password should be at least 6 characters.");
         const credential = await createUserWithEmailAndPassword(auth, email, password);
         if (name && credential.user) {
           const { updateProfile } = await import('firebase/auth');
           await updateProfile(credential.user, { displayName: name });
         }
-        if (credential.user) {
-          await syncWebUser(credential.user, name);
-        }
+        if (credential.user) await syncWebUser(credential.user, name);
       } else {
         const credential = await signInWithEmailAndPassword(auth, email, password);
-        if (credential.user) {
-          await syncWebUser(credential.user, null);
-        }
+        if (credential.user) await syncWebUser(credential.user, null);
       }
       onAuthSuccess();
     } catch (err: any) {
       console.error(err);
       if (err?.code === 'auth/invalid-credential' || err?.code === 'auth/user-not-found') {
-        setError("You don't have an account or entered wrong credentials. Please sign up below if you need a new account!");
+        setError("Invalid credentials. Sign up below if you're new.");
       } else {
-        setError(err?.message || "Authentication failed. Please check credentials.");
+        setError(err?.message || "Authentication failed.");
       }
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   const handleGoogleAuth = async () => {
-    setError(null);
-    setLoading(true);
+    setError(null); setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
       const credential = await signInWithPopup(auth, provider);
-      if (credential.user) {
-        await syncWebUser(credential.user, null);
-      }
+      if (credential.user) await syncWebUser(credential.user, null);
       onAuthSuccess();
     } catch (err: any) {
       console.error(err);
-      if (err?.code !== 'auth/popup-closed-by-user') {
-        setError(err?.message || "Google Sign-In failed.");
-      }
-    } finally {
-      setLoading(false);
-    }
+      if (err?.code !== 'auth/popup-closed-by-user') setError(err?.message || "Google Sign-In failed.");
+    } finally { setLoading(false); }
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-      <form onSubmit={handleEmailAuth} style={{ display: 'flex', flexDirection: 'column' }}>
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      {/* Branded header with coZify logo */}
+      <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', damping: 20, stiffness: 300, delay: 0.1 }}
+          style={{ margin: '0 auto 1.25rem', display: 'flex', justifyContent: 'center' }}
+        >
+          <img src="/cozify-logo-light.png" alt="coZify"
+            style={{
+              height: 48, objectFit: 'contain',
+              filter: dark ? 'invert(1) hue-rotate(180deg) brightness(1.15) drop-shadow(0 0 12px rgba(123,97,255,0.4))' : 'none',
+              transition: 'all 0.4s ease'
+            }}
+            onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+        </motion.div>
+        <motion.h2
+          initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.4 }}
+          style={{ fontSize: '1.65rem', fontWeight: 700, letterSpacing: '-0.04em', color: textColor, margin: '0 0 0.35rem', fontFamily: sfFont }}
+        >{isSignUp ? 'Create account' : 'Welcome back'}</motion.h2>
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+          style={{ color: mutedColor, fontSize: '0.88rem', margin: 0, fontFamily: sfFont }}
+        >{isSignUp ? 'Set up your coZify account' : 'Sign in to your coZify account'}</motion.p>
+      </div>
+
+      {/* Form */}
+      <form onSubmit={handleEmailAuth} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
         {isSignUp && (
           <div>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: labelColor, marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Full Name</label>
-            <input type="text" placeholder="e.g. Mustaq" required value={name}
+            <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: mutedColor, marginBottom: '0.4rem', letterSpacing: '0.03em', fontFamily: sfFont }}>Full Name</label>
+            <input type="text" placeholder="Your name" required value={name}
               onFocus={() => setFocusedField('name')} onBlur={() => setFocusedField(null)}
               onChange={(e) => setName(e.target.value)} style={getInputStyle('name')} />
           </div>
         )}
         <div>
-          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: labelColor, marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Email Address</label>
-          <input type="email" placeholder="e.g. email@example.com" required value={email}
+          <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: mutedColor, marginBottom: '0.4rem', letterSpacing: '0.03em', fontFamily: sfFont }}>Email</label>
+          <input type="email" placeholder="name@example.com" required value={email}
             onFocus={() => setFocusedField('email')} onBlur={() => setFocusedField(null)}
             onChange={(e) => setEmail(e.target.value)} style={getInputStyle('email')} />
         </div>
         <div>
-          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: labelColor, marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Password</label>
-          <input type="password" placeholder="••••••••••••" required value={password}
+          <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 600, color: mutedColor, marginBottom: '0.4rem', letterSpacing: '0.03em', fontFamily: sfFont }}>Password</label>
+          <input type="password" placeholder="••••••••" required value={password}
             onFocus={() => setFocusedField('password')} onBlur={() => setFocusedField(null)}
             onChange={(e) => setPassword(e.target.value)} style={getInputStyle('password')} />
         </div>
 
         {error && (
-          <p style={{ color: '#FF4D8D', fontSize: '0.82rem', fontWeight: 500, margin: '0.2rem 0 0.75rem', lineHeight: 1.4 }} aria-live="polite">
-            ⚠️ {error}
-          </p>
+          <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+            style={{
+              color: dark ? '#F87171' : '#EF4444', fontSize: '0.82rem', fontWeight: 500,
+              margin: '0.1rem 0', lineHeight: 1.5, fontFamily: sfFont,
+              padding: '0.6rem 0.8rem', borderRadius: '0.75rem',
+              background: dark ? 'rgba(248,113,113,0.08)' : 'rgba(239,68,68,0.06)',
+              border: `1px solid ${dark ? 'rgba(248,113,113,0.15)' : 'rgba(239,68,68,0.1)'}`
+            }} aria-live="polite">{error}</motion.p>
         )}
 
         <motion.button type="submit" disabled={loading} whileTap={{ scale: 0.97 }}
-          style={{ background: primaryGradient, color: 'white', border: 'none', borderRadius: '999px', padding: '0.8rem', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 700, fontSize: '0.95rem', cursor: loading ? 'not-allowed' : 'pointer', marginTop: '0.5rem', transition: 'all 0.2s', opacity: loading ? 0.7 : 1, boxShadow: dark ? `0 4px 20px ${primaryGreen}33` : 'none' }}>
-          {loading ? 'Processing...' : isSignUp ? 'Create Account' : 'Sign In'}
+          style={{
+            background: primaryGradient, color: '#fff', border: 'none',
+            borderRadius: '999px', padding: '0.85rem',
+            fontFamily: sfFont, fontWeight: 700, fontSize: '0.95rem',
+            cursor: loading ? 'not-allowed' : 'pointer', marginTop: '0.35rem',
+            transition: 'all 0.25s cubic-bezier(0.32,0.72,0,1)',
+            opacity: loading ? 0.65 : 1,
+            boxShadow: `0 0 24px rgba(123,97,255,0.3)`
+          }}>
+          {loading ? 'Processing...' : isSignUp ? 'Create Account' : 'Continue'}
         </motion.button>
       </form>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.4rem 0' }}>
-        <div style={{ flex: 1, height: 1, background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }} />
-        <span style={{ fontSize: '0.7rem', color: labelColor, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>or</span>
-        <div style={{ flex: 1, height: 1, background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }} />
+      {/* Divider */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: '1.15rem 0' }}>
+        <div style={{ flex: 1, height: 1, background: borderDefault }} />
+        <span style={{ fontSize: '0.7rem', color: mutedColor, fontWeight: 500, letterSpacing: '0.04em', fontFamily: sfFont }}>or</span>
+        <div style={{ flex: 1, height: 1, background: borderDefault }} />
       </div>
 
+      {/* Google */}
       <motion.button type="button" onClick={handleGoogleAuth} disabled={loading} whileTap={{ scale: 0.97 }}
-        style={{ background: googleBg, border: `1px solid ${googleBorder}`, color: textColor, borderRadius: '999px', padding: '0.8rem', cursor: 'pointer', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 600, fontSize: '0.95rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', transition: 'all 0.2s', boxShadow: dark ? 'none' : '0 2px 8px rgba(0,0,0,0.04)' }}>
+        style={{
+          background: 'transparent', border: `1px solid ${borderDefault}`,
+          color: textColor, borderRadius: '999px', padding: '0.8rem', cursor: 'pointer',
+          fontFamily: sfFont, fontWeight: 600, fontSize: '0.92rem',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem',
+          transition: 'all 0.25s cubic-bezier(0.32,0.72,0,1)'
+        }}>
         <svg style={{ width: 18, height: 18 }} viewBox="0 0 24 24">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
           <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.56-2.77c-.98.66-2.23 1.06-3.72 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
           <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
           <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" stroke="none" />
         </svg>
-        Sign In with Google
+        Google
       </motion.button>
 
-      <motion.button type="button" onClick={() => setIsSignUp(!isSignUp)}
-        whileHover={{ scale: 1.02, color: dark ? '#5bf596' : '#118a38' }}
-        whileTap={{ scale: 0.98 }}
-        style={{ background: 'none', border: 'none', color: primaryGreen, fontSize: '0.85rem', cursor: 'pointer', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 600, textAlign: 'center', marginTop: '0.5rem', transition: 'color 0.2s' }}>
-        {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Create one"}
-      </motion.button>
+      {/* Toggle */}
+      <div style={{ textAlign: 'center', marginTop: '1.15rem' }}>
+        <span style={{ color: mutedColor, fontSize: '0.85rem', fontFamily: sfFont }}>{isSignUp ? 'Already have an account? ' : 'New here? '}</span>
+        <motion.button type="button" onClick={() => setIsSignUp(!isSignUp)}
+          whileHover={{ opacity: 0.8 }} whileTap={{ scale: 0.98 }}
+          style={{ background: 'none', border: 'none', color: accentPurple, fontSize: '0.85rem', cursor: 'pointer', fontFamily: sfFont, fontWeight: 600, padding: 0 }}>
+          {isSignUp ? 'Sign in' : 'Create account'}
+        </motion.button>
+      </div>
     </div>
   );
 }
@@ -574,7 +614,7 @@ export default function App() {
   const navBorder = dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
   const divider = `linear-gradient(90deg,transparent,${dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'},transparent)`;
 
-  const apkHref = '/cozify-debug.apk';
+  const apkHref = '/app-debug.apk';
 
   const DownloadBtn = ({ style }: { style?: React.CSSProperties }) => {
     if (user) {
@@ -724,10 +764,17 @@ export default function App() {
               style={{ background: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)', border: `1px solid ${cardBorder}`, borderRadius: 999, padding: '0.7rem 1.25rem', cursor: 'pointer', color: textColor, fontSize: '0.9rem', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
               {dark ? '☀️ Switch to Light Mode' : '🌙 Switch to Dark Mode'}
             </motion.button>
-            <a href={apkHref} download onClick={() => setMobileMenuOpen(false)}
-              style={{ background: 'linear-gradient(135deg,#7B61FF,#00E5FF)', color: 'white', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 600, border: 'none', padding: '0.75rem 1.5rem', borderRadius: 999, textDecoration: 'none', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center', boxShadow: '0 0 24px rgba(123,97,255,0.4)' }}>
-              📥 Download APK — Free
-            </a>
+            {user ? (
+              <a href={apkHref} download onClick={() => setMobileMenuOpen(false)}
+                style={{ background: 'linear-gradient(135deg,#7B61FF,#00E5FF)', color: 'white', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 600, border: 'none', padding: '0.75rem 1.5rem', borderRadius: 999, textDecoration: 'none', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center', boxShadow: '0 0 24px rgba(123,97,255,0.4)' }}>
+                📥 Download APK — Free
+              </a>
+            ) : (
+              <button onClick={() => { setMobileMenuOpen(false); setModal('login'); }}
+                style={{ background: 'linear-gradient(135deg,#7B61FF,#00E5FF)', color: 'white', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 600, border: 'none', padding: '0.75rem 1.5rem', borderRadius: 999, textDecoration: 'none', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center', boxShadow: '0 0 24px rgba(123,97,255,0.4)', cursor: 'pointer' }}>
+                📥 Download APK — Free
+              </button>
+            )}
             {user ? (
               <motion.button whileTap={{ scale: 0.95 }} onClick={() => { signOut(auth); setMobileMenuOpen(false); }}
                 style={{ background: 'rgba(255,77,141,0.08)', border: '1px solid rgba(255,77,141,0.2)', borderRadius: 999, padding: '0.7rem 1.25rem', cursor: 'pointer', color: '#FF4D8D', fontSize: '0.9rem', fontFamily: 'Space Grotesk,sans-serif', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
@@ -771,8 +818,9 @@ export default function App() {
 
                 <motion.div variants={fadeUp} style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '2.5rem' }}>
                   <DownloadBtn style={{ fontSize: '0.95rem', padding: '0.8rem 1.75rem' }} />
-                  <button style={{ background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', color: textColor, fontFamily: 'Space Grotesk,sans-serif', fontWeight: 500, border: `1px solid ${cardBorder}`, padding: '0.8rem 1.75rem', borderRadius: 999, cursor: 'pointer', fontSize: '0.95rem' }}>
-                    🍎 iOS Soon
+                  <button style={{ background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', color: textColor, fontFamily: 'Space Grotesk,sans-serif', fontWeight: 500, border: `1px solid ${cardBorder}`, padding: '0.8rem 1.75rem', borderRadius: 999, cursor: 'pointer', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <svg width="16" height="19" viewBox="0 0 814 1000" style={{ fill: 'currentColor' }}><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76.5 0-103.7 40.8-165.9 40.8s-105.6-57.8-155.5-127.9C44.5 761.5 0 621.1 0 488.9 0 313.2 117.7 220.3 233.5 220.3c64.5 0 118.2 42.5 158.7 42.5 38.6 0 98.9-45 170.5-45 27.5 0 126.6 2.1 191.4 123.1zM554.1 159.4c31.1-36.9 53.1-88.1 53.1-139.4 0-7.1-.6-14.3-1.9-20-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8.6 15.7 1.3 18.2 2.6.6 6.4.6 10.2.6 45.9 0 103.4-30.4 139.5-70.7z"/></svg>
+                    iOS Soon
                   </button>
                 </motion.div>
 
@@ -902,7 +950,10 @@ export default function App() {
             <p style={{ color: mutedText, lineHeight: 1.7, maxWidth: 440, margin: '0 auto 2rem', fontSize: 'clamp(0.875rem,2vw,1rem)' }}>Join thousands tracking smarter, spending better, and building real financial clarity. Free forever.</p>
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
               <DownloadBtn style={{ padding: '0.875rem 2rem', fontSize: '1rem' }} />
-              <button style={{ background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', color: textColor, fontFamily: 'Space Grotesk,sans-serif', fontWeight: 500, border: `1px solid ${cardBorder}`, padding: '0.875rem 2rem', borderRadius: 999, cursor: 'pointer', fontSize: '1rem' }}>🍎 Coming to iOS</button>
+              <button style={{ background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', color: textColor, fontFamily: 'Space Grotesk,sans-serif', fontWeight: 500, border: `1px solid ${cardBorder}`, padding: '0.875rem 2rem', borderRadius: 999, cursor: 'pointer', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <svg width="18" height="21" viewBox="0 0 814 1000" style={{ fill: 'currentColor' }}><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76.5 0-103.7 40.8-165.9 40.8s-105.6-57.8-155.5-127.9C44.5 761.5 0 621.1 0 488.9 0 313.2 117.7 220.3 233.5 220.3c64.5 0 118.2 42.5 158.7 42.5 38.6 0 98.9-45 170.5-45 27.5 0 126.6 2.1 191.4 123.1zM554.1 159.4c31.1-36.9 53.1-88.1 53.1-139.4 0-7.1-.6-14.3-1.9-20-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8.6 15.7 1.3 18.2 2.6.6 6.4.6 10.2.6 45.9 0 103.4-30.4 139.5-70.7z"/></svg>
+                Coming to iOS
+              </button>
             </div>
           </div>
         </motion.div>
