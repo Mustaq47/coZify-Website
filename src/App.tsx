@@ -2,7 +2,8 @@ import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { useRef, useState, useEffect } from 'react';
 import { auth, db } from './firebase';
 import { onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { collection, addDoc, serverTimestamp, doc, setDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, setDoc, query, where, getDocs } from 'firebase/firestore';
+import confetti from 'canvas-confetti';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -597,10 +598,49 @@ export default function App() {
   const [user, setUser] = useState<any>(null);
   const [hoveredFeature, setHoveredFeature] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showThanks, setShowThanks] = useState(false);
 
   useEffect(() => {
-    return onAuthStateChanged(auth, (u) => {
+    return onAuthStateChanged(auth, async (u) => {
       setUser(u);
+      if (u?.email) {
+        if (sessionStorage.getItem('hasSeenThanks') !== 'true') {
+          try {
+            const q = query(collection(db, 'special_emails'), where('email', '==', u.email));
+            const snap = await getDocs(q);
+            if (!snap.empty) {
+              sessionStorage.setItem('hasSeenThanks', 'true');
+              setShowThanks(true);
+              const duration = 3000;
+              const end = Date.now() + duration;
+
+              const frame = () => {
+                confetti({
+                  particleCount: 5,
+                  angle: 60,
+                  spread: 55,
+                  origin: { x: 0 },
+                  colors: ['#7B61FF', '#00E5FF', '#FF4D8D']
+                });
+                confetti({
+                  particleCount: 5,
+                  angle: 120,
+                  spread: 55,
+                  origin: { x: 1 },
+                  colors: ['#7B61FF', '#00E5FF', '#FF4D8D']
+                });
+
+                if (Date.now() < end) {
+                  requestAnimationFrame(frame);
+                }
+              };
+              frame();
+            }
+          } catch (error) {
+            console.error('Error checking special emails:', error);
+          }
+        }
+      }
     });
   }, []);
 
@@ -636,6 +676,24 @@ export default function App() {
 
       {/* ─── MODALS ─── */}
       <AnimatePresence>
+        {showThanks && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}>
+            <motion.div initial={{ scale: 0.85, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: -20 }} transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+              style={{ background: dark ? 'rgba(20,20,30,0.85)' : 'rgba(255,255,255,0.85)', padding: '3rem 2rem', borderRadius: '2rem', border: `1px solid ${cardBorder}`, boxShadow: '0 24px 64px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.1) inset', maxWidth: 420, width: '100%', textAlign: 'center', position: 'relative' }}>
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(123,97,255,0.1), rgba(0,229,255,0.1))', borderRadius: '2rem', pointerEvents: 'none' }} />
+              <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🎉</div>
+              <h2 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '1rem', color: textColor, letterSpacing: '-0.02em' }}>Thank You!</h2>
+              <p style={{ color: mutedText, lineHeight: 1.6, marginBottom: '2rem', fontSize: '1.05rem' }}>
+                Thanks for your Support and using my app. Here is the updated app, if you have any suggestions please report them to me!
+              </p>
+              <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setShowThanks(false)}
+                style={{ background: 'linear-gradient(135deg,#7B61FF,#00E5FF)', color: 'white', border: 'none', padding: '0.875rem 2rem', borderRadius: 999, fontSize: '1rem', fontWeight: 600, fontFamily: 'Space Grotesk,sans-serif', cursor: 'pointer', boxShadow: '0 8px 24px rgba(123,97,255,0.3)', width: '100%' }}>
+                Awesome
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
         {modal === 'privacy' && (
           <Modal title="Privacy Policy" onClose={() => setModal(null)} dark={dark}>
             <div style={{ color: dark ? 'rgba(255,255,255,0.6)' : 'rgba(15,23,42,0.7)', lineHeight: 1.8, fontSize: '0.9rem' }}>
