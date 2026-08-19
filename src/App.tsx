@@ -218,7 +218,7 @@ function LoginForm({ dark, onAuthSuccess }: { dark: boolean; onAuthSuccess: () =
   const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const accentPurple = '#7B61FF';
-  const accentCyan = '#00E5FF';
+
   const primaryGradient = 'linear-gradient(135deg, #7B61FF, #00E5FF)';
   const textColor = dark ? '#F8FAFC' : '#111827';
   const mutedColor = dark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.5)';
