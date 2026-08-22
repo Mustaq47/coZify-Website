@@ -12,6 +12,10 @@
   <img src="src/assets/hero.png" alt="coZify Hero Preview" width="100%" />
 </div>
 
+## 📱 Download App
+
+- [Download coZify v1.0.2 APK (Android)](https://github.com/Mustaq47/coZify-Website/raw/main/public/coZify-v1.0.2.apk)
+
 ## 🚀 Features
 
 - **Blazing Fast**: Powered by Vite and SWC/Oxc for instant HMR.
