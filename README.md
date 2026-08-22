@@ -18,7 +18,7 @@
 
 Get the latest version of the coZify Android App right now:
 
-- 📥 **[Download coZify v1.0.2 APK (Android)](https://github.com/Mustaq47/coZify-Website/raw/main/public/coZify-v1.0.2.apk)**
+- 📥 **[Download coZify v1.0.3 APK (Android)](https://github.com/Mustaq47/coZify-Website/raw/main/public/coZify-v1.0.3.apk)**
 
 ---
 
