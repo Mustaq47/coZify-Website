@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="public/cozify-logo-dark.png" alt="coZify Logo" width="250" style="border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" />
+  <img src="public/cozify-logo-dark.png?v=2" alt="coZify Logo" width="250" style="border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" />
   
   # coZify
   
