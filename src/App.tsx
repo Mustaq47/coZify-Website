@@ -654,7 +654,7 @@ export default function App() {
   const navBorder = dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
   const divider = `linear-gradient(90deg,transparent,${dark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'},transparent)`;
 
-  const apkHref = '/coZify-v1.0.3.apk';
+  const apkHref = '/coZify_v1.0.4.apk';
 
   const DownloadBtn = ({ style }: { style?: React.CSSProperties }) => {
     if (user) {
@@ -877,7 +877,7 @@ export default function App() {
                 <motion.div variants={fadeUp} style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '2.5rem' }}>
                   <DownloadBtn style={{ fontSize: '0.95rem', padding: '0.8rem 1.75rem' }} />
                   <button style={{ background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', color: textColor, fontFamily: 'Space Grotesk,sans-serif', fontWeight: 500, border: `1px solid ${cardBorder}`, padding: '0.8rem 1.75rem', borderRadius: 999, cursor: 'pointer', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <svg width="16" height="19" viewBox="0 0 814 1000" style={{ fill: 'currentColor' }}><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76.5 0-103.7 40.8-165.9 40.8s-105.6-57.8-155.5-127.9C44.5 761.5 0 621.1 0 488.9 0 313.2 117.7 220.3 233.5 220.3c64.5 0 118.2 42.5 158.7 42.5 38.6 0 98.9-45 170.5-45 27.5 0 126.6 2.1 191.4 123.1zM554.1 159.4c31.1-36.9 53.1-88.1 53.1-139.4 0-7.1-.6-14.3-1.9-20-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8.6 15.7 1.3 18.2 2.6.6 6.4.6 10.2.6 45.9 0 103.4-30.4 139.5-70.7z"/></svg>
+                    <svg width="16" height="19" viewBox="0 0 814 1000" style={{ fill: 'currentColor' }}><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76.5 0-103.7 40.8-165.9 40.8s-105.6-57.8-155.5-127.9C44.5 761.5 0 621.1 0 488.9 0 313.2 117.7 220.3 233.5 220.3c64.5 0 118.2 42.5 158.7 42.5 38.6 0 98.9-45 170.5-45 27.5 0 126.6 2.1 191.4 123.1zM554.1 159.4c31.1-36.9 53.1-88.1 53.1-139.4 0-7.1-.6-14.3-1.9-20-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8.6 15.7 1.3 18.2 2.6.6 6.4.6 10.2.6 45.9 0 103.4-30.4 139.5-70.7z" /></svg>
                     iOS Soon
                   </button>
                 </motion.div>
@@ -1009,7 +1009,7 @@ export default function App() {
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
               <DownloadBtn style={{ padding: '0.875rem 2rem', fontSize: '1rem' }} />
               <button style={{ background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)', color: textColor, fontFamily: 'Space Grotesk,sans-serif', fontWeight: 500, border: `1px solid ${cardBorder}`, padding: '0.875rem 2rem', borderRadius: 999, cursor: 'pointer', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <svg width="18" height="21" viewBox="0 0 814 1000" style={{ fill: 'currentColor' }}><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76.5 0-103.7 40.8-165.9 40.8s-105.6-57.8-155.5-127.9C44.5 761.5 0 621.1 0 488.9 0 313.2 117.7 220.3 233.5 220.3c64.5 0 118.2 42.5 158.7 42.5 38.6 0 98.9-45 170.5-45 27.5 0 126.6 2.1 191.4 123.1zM554.1 159.4c31.1-36.9 53.1-88.1 53.1-139.4 0-7.1-.6-14.3-1.9-20-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8.6 15.7 1.3 18.2 2.6.6 6.4.6 10.2.6 45.9 0 103.4-30.4 139.5-70.7z"/></svg>
+                <svg width="18" height="21" viewBox="0 0 814 1000" style={{ fill: 'currentColor' }}><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76.5 0-103.7 40.8-165.9 40.8s-105.6-57.8-155.5-127.9C44.5 761.5 0 621.1 0 488.9 0 313.2 117.7 220.3 233.5 220.3c64.5 0 118.2 42.5 158.7 42.5 38.6 0 98.9-45 170.5-45 27.5 0 126.6 2.1 191.4 123.1zM554.1 159.4c31.1-36.9 53.1-88.1 53.1-139.4 0-7.1-.6-14.3-1.9-20-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8.6 15.7 1.3 18.2 2.6.6 6.4.6 10.2.6 45.9 0 103.4-30.4 139.5-70.7z" /></svg>
                 Coming to iOS
               </button>
             </div>
